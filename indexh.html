@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NumHive – Virtual Numbers</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#F3F6F4;--surface:#FFFFFF;--text:#10201A;--muted:#58695F;--accent:#0B8A5A;--on-accent:#FFFFFF;--line:#D5DED8;--warn:#9A5B00;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C1511;--surface:#142019;--text:#E6F0EA;--muted:#93A89C;--accent:#3DDC97;--on-accent:#04180F;--line:#26382E;--warn:#F0B44C;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0C1511;--surface:#142019;--text:#E6F0EA;--muted:#93A89C;--accent:#3DDC97;--on-accent:#04180F;--line:#26382E;--warn:#F0B44C;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:400 1rem/1.55 Inter,system-ui,sans-serif}
+h1,h2,h3{font-family:"Space Grotesk",system-ui,sans-serif;margin:0;line-height:1.15}
+.wrap{max-width:62rem;margin:0 auto;padding:0 1.1rem}
+.demo{background:var(--warn);color:#fff;text-align:center;font-size:.85rem;padding:.4rem .8rem}
+@media (prefers-color-scheme:dark){.demo{color:#1A1000}}
+header{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 0}
+.logo{font:700 1.4rem "Space Grotesk",sans-serif}
+.bal{display:flex;align-items:center;gap:.6rem;background:var(--surface);border:1px solid var(--line);border-radius:2rem;padding:.35rem .4rem .35rem 1rem;font-weight:600}
+.bal button{padding:.35rem .9rem}
+.hero{padding:2.5rem 0 1.5rem}
+.hero h1{font-size:clamp(2.2rem,7vw,3.8rem);max-width:16ch}
+.hero p{color:var(--muted);max-width:34rem;margin:1rem 0 0}
+section{padding:1.75rem 0}
+section>h2{font-size:1.6rem;margin-bottom:1rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:.8rem;padding:1.1rem}
+button,.btn{font:600 .95rem Inter,sans-serif;background:var(--accent);color:var(--on-accent);border:0;border-radius:.5rem;padding:.65rem 1.1rem;cursor:pointer;text-decoration:none;display:inline-block}
+button.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+button:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.tabs{display:flex;gap:.5rem;margin-bottom:1rem}
+.tab[aria-selected="true"]{background:var(--text);color:var(--bg)}
+.grid{display:grid;gap:.8rem;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.item{display:flex;flex-direction:column;gap:.6rem}
+.item b{font-size:1.05rem}.price{font:700 1.4rem "Space Grotesk",sans-serif;color:var(--accent)}
+.muted{color:var(--muted);font-size:.9rem}
+.two{display:grid;gap:1rem;grid-template-columns:1fr}
+@media(min-width:760px){.two{grid-template-columns:1fr 1fr}}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin:.6rem 0}
+.chip{background:transparent;color:var(--text);border:1px solid var(--line)}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--on-accent)}
+label{display:grid;gap:.3rem;font-weight:500;margin-bottom:.8rem}
+input{font:inherit;padding:.6rem .7rem;border:1px solid var(--line);border-radius:.4rem;background:var(--bg);color:var(--text)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:.8rem;padding:.7rem 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.tag{font-size:.78rem;font-weight:600;padding:.15rem .55rem;border-radius:2rem;border:1px solid var(--line)}
+.tag.ok{color:var(--accent);border-color:var(--accent)}.tag.wait{color:var(--warn);border-color:var(--warn)}
+#qr{background:#fff;padding:.5rem;display:inline-block;border-radius:.4rem;margin:.5rem 0}
+#toast{position:fixed;left:50%;bottom:calc(1rem + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:.7rem 1.1rem;border-radius:.5rem;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw}
+#toast.on{opacity:1}
+footer{padding:2rem 0 3rem;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);margin-top:1rem}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">NumHive <span class="tag wait" style="font-size:.7rem;vertical-align:middle">Test mode</span></div>
+  <div class="bal" id="balbar" hidden><span>₹<span id="bal">0</span> credits</span><button id="topup">Add credits</button></div>
+</header>
+
+<div class="hero">
+  <h1>Virtual numbers for WhatsApp and Telegram.</h1>
+  <p>Top up credits with UPI, pick a service and country, and we deliver your number to your orders page.</p>
+</div>
+
+<section id="signup" hidden>
+  <div class="card" style="max-width:26rem">
+    <h2 style="font-size:1.3rem;margin-bottom:.8rem">Create your account</h2>
+    <form id="sf"><label>Name<input id="sn" required autocomplete="name"></label>
+    <label>Email<input id="se" type="email" required autocomplete="email"></label>
+    <button type="submit">Get started</button></form>
+  </div>
+</section>
+
+<main id="app" hidden>
+<section id="buy">
+  <h2>Buy a number</h2>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<section id="wallet">
+  <div class="two">
+    <div class="card">
+      <h2 style="font-size:1.3rem">Add credits</h2>
+      <p class="muted">1 credit = ₹1. Pick an amount, pay by UPI, then enter the 12-digit UTR from your payment app.</p>
+      <div class="chips" id="chips"></div>
+      <label>Amount (₹)<input id="amt" type="number" min="50" step="1" value="250"></label>
+      <button id="pay">Pay with UPI</button>
+      <div id="upi" hidden>
+        <p class="muted" style="margin-top:1rem">Pay <b>₹<span id="pa"></span></b> to <b id="pid"></b></p>
+        <p class="muted" style="font-size:.8rem">Test mode: payments are not checked against the bank yet.</p>
+        <div id="qr"></div><br>
+        <a class="btn ghost" id="deep" style="border:1px solid var(--line);background:transparent;color:var(--text)">Open UPI app</a>
+        <label style="margin-top:1rem">UTR / transaction ID<input id="utr" inputmode="numeric" maxlength="12" placeholder="12 digits"></label>
+        <button id="sub">Submit payment</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:1.3rem">Payments</h2>
+      <div id="pays"><p class="muted">No payments yet.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="orders">
+  <h2>Your orders</h2>
+  <div class="card" id="ords"><p class="muted">No orders yet.</p></div>
+</section>
+<section id="admin" hidden><h2>Admin: pending payments (test)</h2><div class="card" id="adm"></div><p class="muted">Test only. Add #admin to the end of the page link to open this panel.</p></section>
+</main>
+
+<footer>© 2026 NumHive. Use numbers only where allowed by the app’s terms and your local laws.</footer>
+</div>
+<div id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* ===== CONFIG: change these ===== */
+const UPI_ID="mohammadafsar827@naviaxis", PAYEE="NumHive", DEMO=true, AUTO_VERIFY_MS=5000; // AUTO_VERIFY_MS: 0 = manual approval only (open the page with #admin)
+const PRICES={WhatsApp:{India:60,USA:85,UK:95,Indonesia:55,Brazil:70},Telegram:{India:45,USA:70,UK:80,Indonesia:40,Brazil:55}};
+/* ================================ */
+const K="numhive_state";
+let S={user:null,credits:0,orders:[],pays:[]},svc="WhatsApp",amt=250;
+const $=i=>document.getElementById(i);
+try{const r=localStorage.getItem(K);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),2600)}
+
+const stTag=p=>p.ok?'<span class="tag ok">✓ Verified</span>':p.rej?'<span class="tag">Rejected</span>':`<span class="tag wait">${["Checking UTR…","Matching amount…","Confirming with bank…"][Math.min(2,Math.floor((Date.now()-p.id)/1500))]}</span>`;
+function verify(id){const p=S.pays.find(x=>x.id==id);if(!p||p.ok||p.rej)return;p.ok=true;S.credits+=p.amt;save();render();toast(`₹${p.amt} verified, credits added`)}
+function render(){
+  const on=!!S.user;
+  $("signup").hidden=on;$("app").hidden=!on;$("balbar").hidden=!on;
+  if(!on)return;
+  $("bal").textContent=S.credits;
+  $("tabs").innerHTML=Object.keys(PRICES).map(k=>`<button class="tab ghost" role="tab" aria-selected="${k===svc}" data-s="${k}">${k}</button>`).join("");
+  $("grid").innerHTML=Object.entries(PRICES[svc]).map(([c,p])=>`<div class="card item"><b>${svc} · ${c}</b><span class="muted">Delivered to your orders page</span><span class="price">₹${p}</span><button data-b="${c}" ${S.credits<p?"disabled":""}>${S.credits<p?"Not enough credits":"Buy now"}</button></div>`).join("");
+  $("pays").innerHTML=S.pays.length?[...S.pays].reverse().map(p=>`<div class="row"><div><b>₹${p.amt}</b><div class="muted">UTR ${esc(p.utr)} · ${new Date(p.id).toLocaleString()}</div></div><div>${stTag(p)}</div></div>`).join(""):'<p class="muted">No payments yet.</p>';
+  $("ords").innerHTML=S.orders.length?[...S.orders].reverse().map(o=>`<div class="row"><div><b>${esc(o.svc)} · ${esc(o.c)}</b><div class="muted">Order #${o.id} · ₹${o.p}</div></div><span class="tag wait">${o.st}</span></div>`).join(""):'<p class="muted">No orders yet.</p>';
+  $("admin").hidden=location.hash!=="#admin";
+  $("adm").innerHTML=S.pays.filter(p=>!p.ok&&!p.rej).map(p=>`<div class="row"><div><b>₹${p.amt}</b><div class="muted">UTR ${esc(p.utr)} · ${esc(S.user.email)}</div></div><div><button data-v="${p.id}">Approve</button> <button class="ghost" data-r="${p.id}">Reject</button></div></div>`).join("")||'<p class="muted">No pending payments.</p>';
+  $("chips").innerHTML=[100,250,500,1000].map(a=>`<button class="chip" aria-pressed="${a===amt}" data-a="${a}">₹${a}</button>`).join("");
+}
+
+$("sf").addEventListener("submit",e=>{e.preventDefault();S.user={name:$("sn").value.trim(),email:$("se").value.trim()};save();render();toast(`Welcome, ${S.user.name}`)});
+$("topup").onclick=()=>$("wallet").scrollIntoView({behavior:"smooth"});
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button");if(!t)return;
+  if(t.dataset.s){svc=t.dataset.s;render()}
+  else if(t.dataset.a){amt=+t.dataset.a;$("amt").value=amt;render()}
+  else if(t.dataset.b){const p=PRICES[svc][t.dataset.b];if(S.credits<p)return toast("Not enough credits");S.credits-=p;S.orders.push({id:Date.now().toString().slice(-6),svc,c:t.dataset.b,p,st:"Awaiting delivery"});save();render();toast("Order placed")}
+  else if(t.dataset.v){verify(+t.dataset.v)}
+  else if(t.dataset.r){const p=S.pays.find(x=>x.id==t.dataset.r);if(p&&!p.ok&&!p.rej){p.rej=true;save();render();toast("Payment rejected")}}
+});
+$("amt").addEventListener("input",()=>{amt=+$("amt").value||0;render()});
+$("pay").onclick=()=>{
+  const a=Math.floor(+$("amt").value);if(!(a>=50))return toast("Minimum top-up is ₹50");
+  $("pa").textContent=a;$("pid").textContent=UPI_ID;$("upi").hidden=false;
+  const link=`upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(PAYEE)}&am=${a}&cu=INR`;
+  $("deep").href=link;$("qr").innerHTML="";
+  if(window.QRCode)new QRCode($("qr"),{text:link,width:160,height:160});
+};
+$("sub").onclick=()=>{
+  const u=$("utr").value.trim(),a=Math.floor(+$("amt").value);
+  if(!/^\d{12}$/.test(u))return toast("Enter the 12-digit UTR");
+  if(S.pays.some(p=>p.utr===u))return toast("This UTR was already submitted");
+  const id=Date.now();S.pays.push({id,amt:a,utr:u,ok:false});save();if(AUTO_VERIFY_MS)setTimeout(()=>verify(id),AUTO_VERIFY_MS);$("utr").value="";$("upi").hidden=true;render();
+  toast("Payment submitted, verifying…");
+};
+window.addEventListener("hashchange",render);
+setInterval(()=>{if(S.pays.some(p=>!p.ok&&!p.rej))render()},700);
+S.pays.filter(p=>!p.ok&&!p.rej).forEach(p=>AUTO_VERIFY_MS&&setTimeout(()=>verify(p.id),AUTO_VERIFY_MS));
+render();
+</script>
+</body>
+</html>
